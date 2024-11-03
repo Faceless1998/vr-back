@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const { body, validationResult } = require('express-validator');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -102,8 +103,15 @@ const Reservation = mongoose.model("Reservation", reservationSchema);
 
 // Routes
 
-// Add a new category
-app.post("/api/categories", async (req, res, next) => {
+// Add a new category with validation
+app.post("/api/categories", [
+  body('name').notEmpty().withMessage('Name is required'),
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const newCategory = new Category({
     name: req.body.name,
   });
